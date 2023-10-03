@@ -5,6 +5,7 @@ set -e
 if [ $# != 4 ]; then
     >&2 echo "4 arguments required"
     echo "Usage: ./main.sh namespace dspa_name kube_config_path output_dir"
+    # mkdir output && ./main.sh dspa sample /home/hukhan/.kube/config output
     exit 1
 fi
 
@@ -21,13 +22,14 @@ then
 fi
 
 vars_file=${output_dir}/vars.yaml
-
+artifacts_file=${output_dir}/artifact_script.sh
 oc apply -f manifests/minio-route.yaml
 echo "Deployed minio route"
 
 cp templates/vars-templates.yaml ${vars_file}
 cp templates/config-template.json ${output_dir}/config.json
 cp templates/sample_config.json ${output_dir}/sample_config.json
+cp templates/artifact_script-template.sh ${artifacts_file}
 
 minio_host_secure="false"
 minio_host_scheme="http"
@@ -63,12 +65,18 @@ sed "s;<namespace>;${namespace};g" templates/forward-minio_template.sh  > ${outp
 sed -i "s;<dspa>;${dspa};g" ${output_dir}/forward-minio.sh
 sed -i "s;<kube_config>;${kube_config_path};g" ${output_dir}/persistence-flags.txt
 
-sed -i "s;<S3_ENDOINT>;${minio_host_scheme}://${minio_host};g" ${vars_file}
-sed -i "s;<S3_BUCKET>;${minio_bucket};g" ${vars_file}
+sed -i "s;<S3_ENDOINT>;${minio_host_scheme}://${minio_host};g" ${artifacts_file}
+sed -i "s;<S3_BUCKET>;${minio_bucket};g" ${artifacts_file}
 
+
+# Create env file
+artifact_script=$(python converter.py ${artifacts_file})
 cp ${vars_file} ${output_dir}/vars.env
-
 cat ${vars_file} | yq 'to_entries | map(.key + "=" + .value) | .[]' > ${output_dir}/vars.env
+
+
+# Add artifact script to vars yaml
+var="${artifact_script}" yq -i '.ARTIFACT_SCRIPT=env(var)' ${vars_file}
 
 chmod +x ${output_dir}/forward-*.sh
 
