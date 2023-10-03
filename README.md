@@ -79,10 +79,10 @@ cd ${DEV_SETUP_REPO}
 Now run API Server
 ```bash
 cd ${DSP_REPO}
-go run --config=${DEV_SETUP_REPO}/output --sampleconfig=${DEV_SETUP_REPO}/output/sample_config.json -logtostderr=true
-
+source ${DEV_SETUP_REPO}/output/vars.env
+go build -o /bin/apiserver backend/src/apiserver/*.go
+./bin/apiserver --config=${DEV_SETUP_REPO}/output --sampleconfig=${DEV_SETUP_REPO}/output/sample_config.json -logtostderr=true
 ```
-
 
 [DSP]: https://github.com/opendatahub-io/data-science-pipelines
 [DSPO]: https://github.com/opendatahub-io/data-science-pipelines-operator

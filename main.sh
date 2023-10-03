@@ -27,11 +27,7 @@ echo "Deployed minio route"
 
 cp templates/vars-templates.yaml ${vars_file}
 cp templates/config-template.json ${output_dir}/config.json
-cp templates/artifact_script-template.sh ${output_dir}/artifact_script.sh
-cp templates/converter.py ${output_dir}/converter.py
 cp templates/sample_config.json ${output_dir}/sample_config.json
-
-
 
 minio_host_secure="false"
 minio_host_scheme="http"
@@ -43,7 +39,7 @@ dbpsw=$(oc -n ${namespace} get secret ds-pipeline-db-$2  -o jsonpath='{.data.pas
 ocserver=$(oc whoami --show-server | tr '//' ' ' | tr ':' ' ' | awk '{print $2}')
 port=$(oc whoami --show-server | tr '//' ' ' | tr ':' ' ' | awk '{print $3}')
 
-var=${minio_host_secure} yq -i '.secure=env(var)' ${vars_file}
+var=${minio_host_secure} yq -i '.secure=strenv(var)' ${vars_file}
 var=${minio_host_scheme} yq -i '.ARTIFACT_ENDPOINT_SCHEME=env(var)' ${vars_file}
 var=${minio_host} yq -i '.ARTIFACT_ENDPOINT=env(var)' ${vars_file}
 var=${minio_host} yq -i '.MINIO_SERVICE_SERVICE_HOST=env(var)' ${vars_file}
@@ -65,9 +61,10 @@ sed "s;<namespace>;${namespace};g" templates/forward-db_template.sh  > ${output_
 sed -i "s;<dspa>;${dspa};g" ${output_dir}/forward-db.sh
 sed "s;<namespace>;${namespace};g" templates/forward-minio_template.sh  > ${output_dir}/forward-minio.sh
 sed -i "s;<dspa>;${dspa};g" ${output_dir}/forward-minio.sh
-sed -i "s;<S3_ENDOINT>;${minio_host_scheme}://${minio_host};g" ${output_dir}/artifact_script.sh
-sed -i "s;<S3_BUCKET>;${minio_bucket};g" ${output_dir}/artifact_script.sh
 sed -i "s;<kube_config>;${kube_config_path};g" ${output_dir}/persistence-flags.txt
+
+sed -i "s;<S3_ENDOINT>;${minio_host_scheme}://${minio_host};g" ${vars_file}
+sed -i "s;<S3_BUCKET>;${minio_bucket};g" ${vars_file}
 
 cp ${vars_file} ${output_dir}/vars.env
 

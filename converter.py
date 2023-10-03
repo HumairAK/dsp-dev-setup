@@ -1,6 +1,6 @@
 from builtins import print, open, repr
 
-with open("artifact_script.sh", 'r') as f:
+with open("templates/artifact_script-template.sh", 'r') as f:
     lines = f.read()
 
 print(repr(lines))

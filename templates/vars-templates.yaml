@@ -13,7 +13,8 @@ secure:
 KUBERNETES_SERVICE_HOST:
 KUBERNETES_SERVICE_PORT:
 # sometimes change
-ARTIFACT_SCRIPT:
+ARTIFACT_SCRIPT: |
+  '#!/usr/bin/env sh\npush_artifact() {\n    workspace_dir=$(echo $(context.taskRun.name) | sed -e "s/$(context.pipeline.name)-//g")\n    workspace_dest=/workspace/${workspace_dir}/artifacts/$(context.pipelineRun.name)/$(context.taskRun.name)\n    artifact_name=$(basename $2)\n    if [ -f "$workspace_dest/$artifact_name" ]; then\n        echo sending to: ${workspace_dest}/${artifact_name}\n        tar -cvzf $1.tgz -C ${workspace_dest} ${artifact_name}\n        aws s3 --endpoint <S3_ENDOINT> cp $1.tgz s3://<S3_BUCKET>/artifacts/$PIPELINERUN/$PIPELINETASK/$1.tgz\n    elif [ -f "$2" ]; then\n        tar -cvzf $1.tgz -C $(dirname $2) ${artifact_name}\n        aws s3 --endpoint <S3_ENDOINT> cp $1.tgz s3://<S3_BUCKET>/artifacts/$PIPELINERUN/$PIPELINETASK/$1.tgz\n    else\n        echo "$2 file does not exist. Skip artifact tracking for $1"\n    fi\n}\npush_log() {\n    cat /var/log/containers/$PODNAME*$NAMESPACE*step-main*.log > step-main.log\n    push_artifact main-log step-main.log\n}\nstrip_eof() {\n    if [ -f "$2" ]; then\n        awk \'NF\' $2 | head -c -1 > $1_temp_save && cp $1_temp_save $2\n    fi\n}'
 ARTIFACT_IMAGE: quay.io/opendatahub/ds-pipelines-artifact-manager:latest
 # never change
 DBCONFIG_PORT: "3306"
