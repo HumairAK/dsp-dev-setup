@@ -22,7 +22,8 @@ echo "Deployed minio route"
 
 
 cp templates/vars-templates.yaml ./vars.yaml
-cp templatess/config-template.json ./config.json
+cp templatess/config-template.json configs/config.json
+cp templatess/artifact_script-template.sh configs/artifact_script.sh
 
 minio_host_secure="false"
 minio_host_scheme="http"
