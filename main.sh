@@ -34,7 +34,6 @@ dbpsw=$(oc -n ${namespace} get secret ds-pipeline-db-$2  -o jsonpath='{.data.pas
 ocserver=$(oc whoami --show-server | tr '//' ' ' | tr ':' ' ' | awk '{print $2}')
 port=$(oc whoami --show-server | tr '//' ' ' | tr ':' ' ' | awk '{print $3}')
 
-
 var=${minio_host_secure} yq -i '.secure=env(var)' ${vars_file}
 var=${minio_host_scheme} yq -i '.ARTIFACT_ENDPOINT_SCHEME=env(var)' ${vars_file}
 var=${minio_host} yq -i '.ARTIFACT_ENDPOINT=env(var)' ${vars_file}
