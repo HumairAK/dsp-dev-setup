@@ -22,11 +22,12 @@ echo "Deployed minio route"
 
 
 cp templates/vars-templates.yaml ./vars.yaml
-cp templatess/config-template.json configs/config.json
-cp templatess/artifact_script-template.sh configs/artifact_script.sh
+cp templates/config-template.json configs/config.json
+cp templates/artifact_script-template.sh configs/artifact_script.sh
 
 minio_host_secure="false"
 minio_host_scheme="http"
+minio_bucket=mlpipeline
 minio_host=$(oc -n ${namespace} get route minio -o yaml | yq .spec.host)
 accesskey=$(oc -n ${namespace} get secret mlpipeline-minio-artifact  -o jsonpath='{.data.accesskey}' | base64 -d )
 secretkey=$(oc -n ${namespace} get secret mlpipeline-minio-artifact  -o jsonpath='{.data.secretkey}' | base64 -d )
@@ -47,10 +48,7 @@ var=${secretkey} yq -i '.secretkey=env(var)' ${vars_file}
 var=${dbpsw} yq -i '.DBCONFIG_PASSWORD=env(var)' ${vars_file}
 var=${ocserver} yq -i '.KUBERNETES_SERVICE_HOST=env(var)' ${vars_file}
 var="${port}" yq -i '.KUBERNETES_SERVICE_PORT=strenv(var)' ${vars_file}
-var="pipeline-runner-${dspa}" yq -i '.DEFAULTPIPELINERUNNERSERVICEACCOUNT=strenv(var)' config.json  -P -o json
-
-echo "Check the env vars for Goland configuration port-forward-db and port-forward-minio"
-echo "Namespaces and DSPA name need to be set there."
+var="pipeline-runner-${dspa}" yq -i '.DEFAULTPIPELINERUNNERSERVICEACCOUNT=strenv(var)' configs/config.json  -P -o json
 
 ocserver=$(oc whoami --show-server)
 sed "s;<api_server>;${ocserver};g" templates/persistence-flags_template.txt  > persistence-flags.txt
@@ -58,6 +56,10 @@ sed "s;<namespace>;${namespace};g" templates/forward-db_template.sh  > forward-d
 sed -i "s;<dspa>;${dspa};g" forward-db.sh
 sed "s;<namespace>;${namespace};g" templates/forward-minio_template.sh  > forward-minio.sh
 sed -i "s;<dspa>;${dspa};g" forward-minio.sh
+
+sed -i "s;<S3_ENDOINT>;${minio_host_scheme}://${minio_host};g" configs/artifact_script.sh
+sed -i "s;<S3_BUCKET>;${minio_bucket};g" configs/artifact_script.sh
+
 
 echo
 GR='\033[0;32m'
