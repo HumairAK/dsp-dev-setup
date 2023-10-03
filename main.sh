@@ -22,7 +22,7 @@ echo "Deployed minio route"
 
 
 cp templates/vars-templates.yaml ./vars.yaml
-
+cp templatess/config-template.json ./config.json
 
 minio_host_secure="false"
 minio_host_scheme="http"
@@ -36,8 +36,8 @@ port=$(oc whoami --show-server | tr '//' ' ' | tr ':' ' ' | awk '{print $3}')
 
 var=${minio_host_secure} yq -i '.secure=env(var)' ${vars_file}
 var=${minio_host_scheme} yq -i '.ARTIFACT_ENDPOINT_SCHEME=env(var)' ${vars_file}
-var=${minio_service_host} yq -i '.ARTIFACT_ENDPOINT=env(var)' ${vars_file}
-var=${minio_service_host} yq -i '.MINIO_SERVICE_SERVICE_HOST=env(var)' ${vars_file}
+var=${minio_host} yq -i '.ARTIFACT_ENDPOINT=env(var)' ${vars_file}
+var=${minio_host} yq -i '.MINIO_SERVICE_SERVICE_HOST=env(var)' ${vars_file}
 
 var=${namespace} yq -i '.POD_NAMESPACE=env(var)' ${vars_file}
 var=${accesskey} yq -i '.OBJECTSTORECONFIG_ACCESSKEY=env(var)' ${vars_file}
