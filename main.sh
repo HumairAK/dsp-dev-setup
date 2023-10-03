@@ -3,7 +3,15 @@
 set -e
 
 # usage:
-# ./set_vars.sh my-ds-project sample
+#
+
+
+if [ $# -eq 0 ]; then
+    >&2 echo "No arguments provided"
+    echo "Usage: ./main.sh namespace dspa_name"
+    exit 1
+fi
+
 
 namespace=$1
 dspa=$2
@@ -12,7 +20,7 @@ vars_file=vars.yaml
 oc apply -f manifests/minio-route.yaml
 echo "Deployed minio route"
 
-minio_host_secure=false
+minio_host_secure="false"
 minio_host_scheme="http"
 minio_host=$(oc -n ${namespace} get route minio -o yaml | yq .spec.host)
 accesskey=$(oc -n ${namespace} get secret mlpipeline-minio-artifact  -o jsonpath='{.data.accesskey}' | base64 -d )
