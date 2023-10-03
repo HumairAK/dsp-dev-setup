@@ -1,0 +1,7 @@
+[
+  {
+    "name": "[Demo] flip-coin",
+    "description": "[source code](https://github.com/red-hat-data-services/data-science-pipelines/tree/master/samples/flip-coin) A conditional pipeline to flip coins based on a random number generator.",
+    "file": "/samples/flip-coin/condition.yaml"
+  }
+]
