@@ -1,0 +1,6 @@
+--kubeconfig=/home/hukhan/.kube/config
+--master=<api_server>
+--mlPipelineAPIServerName=localhost
+--mlPipelineServiceHttpPort=8888
+--mlPipelineServiceGRPCPort=8887
+--namespace=redhat-ods-applications
