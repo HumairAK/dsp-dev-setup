@@ -31,6 +31,8 @@ cp templates/artifact_script-template.sh ${output_dir}/artifact_script.sh
 cp templates/converter.py ${output_dir}/converter.py
 cp templates/sample_config.json ${output_dir}/sample_config.json
 
+
+
 minio_host_secure="false"
 minio_host_scheme="http"
 minio_bucket=mlpipeline
@@ -58,10 +60,14 @@ var="pipeline-runner-${dspa}" yq -i '.DEFAULTPIPELINERUNNERSERVICEACCOUNT=strenv
 
 ocserver=$(oc whoami --show-server)
 sed "s;<api_server>;${ocserver};g" templates/persistence-flags_template.txt  > ${output_dir}/persistence-flags.txt
+sed -i "s;<namespace>;${namespace};g" ${output_dir}/persistence-flags.txt
 sed "s;<namespace>;${namespace};g" templates/forward-db_template.sh  > ${output_dir}/forward-db.sh
 sed -i "s;<dspa>;${dspa};g" ${output_dir}/forward-db.sh
 sed "s;<namespace>;${namespace};g" templates/forward-minio_template.sh  > ${output_dir}/forward-minio.sh
 sed -i "s;<dspa>;${dspa};g" ${output_dir}/forward-minio.sh
+
+chmod +x ${output_dir}/forward-*.sh
+
 
 sed -i "s;<S3_ENDOINT>;${minio_host_scheme}://${minio_host};g" ${output_dir}/artifact_script.sh
 sed -i "s;<S3_BUCKET>;${minio_bucket};g" ${output_dir}/artifact_script.sh

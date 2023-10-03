@@ -3,4 +3,4 @@
 --mlPipelineAPIServerName=localhost
 --mlPipelineServiceHttpPort=8888
 --mlPipelineServiceGRPCPort=8887
---namespace=redhat-ods-applications
+--namespace=<namespace>
