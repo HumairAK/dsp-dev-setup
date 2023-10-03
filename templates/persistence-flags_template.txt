@@ -1,4 +1,4 @@
---kubeconfig=/home/hukhan/.kube/config
+--kubeconfig=<kube_config>
 --master=<api_server>
 --mlPipelineAPIServerName=localhost
 --mlPipelineServiceHttpPort=8888

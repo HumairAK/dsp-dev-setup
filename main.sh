@@ -8,7 +8,7 @@ set -e
 
 if [ $# -eq 0 ]; then
     >&2 echo "No arguments provided"
-    echo "Usage: ./main.sh namespace dspa_name"
+    echo "Usage: ./main.sh namespace dspa_name kube_config_path"
     exit 1
 fi
 
@@ -60,6 +60,7 @@ sed -i "s;<dspa>;${dspa};g" forward-minio.sh
 sed -i "s;<S3_ENDOINT>;${minio_host_scheme}://${minio_host};g" configs/artifact_script.sh
 sed -i "s;<S3_BUCKET>;${minio_bucket};g" configs/artifact_script.sh
 
+sed -i "s;<kube_config>;${3};g" persistence-flags.txt
 
 echo
 GR='\033[0;32m'
