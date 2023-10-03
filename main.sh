@@ -20,6 +20,10 @@ vars_file=vars.yaml
 oc apply -f manifests/minio-route.yaml
 echo "Deployed minio route"
 
+
+cp templates/vars-templates.yaml ./vars.yaml
+
+
 minio_host_secure="false"
 minio_host_scheme="http"
 minio_host=$(oc -n ${namespace} get route minio -o yaml | yq .spec.host)
