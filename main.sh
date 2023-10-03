@@ -2,21 +2,30 @@
 
 set -e
 
-if [ $# -eq 0 ]; then
-    >&2 echo "No arguments provided"
-    echo "Usage: ./main.sh namespace dspa_name kube_config_path"
+if [ $# != 4 ]; then
+    >&2 echo "4 arguments required"
+    echo "Usage: ./main.sh namespace dspa_name kube_config_path output_dir"
     exit 1
 fi
 
+
 namespace=$1
 dspa=$2
-vars_file=vars.yaml
+kube_config_path=$3
 output_dir=$4
+
+if [ ! -d "${output_dir}" ];
+then
+ echo "Directory ${output_dir} DOES NOT exists."
+ exit
+fi
+
+vars_file=${output_dir}/vars.yaml
 
 oc apply -f manifests/minio-route.yaml
 echo "Deployed minio route"
 
-cp templates/vars-templates.yaml ./vars.yaml
+cp templates/vars-templates.yaml ${vars_file}
 cp templates/config-template.json ${output_dir}/config.json
 cp templates/artifact_script-template.sh ${output_dir}/artifact_script.sh
 cp templates/converter.py ${output_dir}/converter.py
@@ -48,7 +57,7 @@ var="${port}" yq -i '.KUBERNETES_SERVICE_PORT=strenv(var)' ${vars_file}
 var="pipeline-runner-${dspa}" yq -i '.DEFAULTPIPELINERUNNERSERVICEACCOUNT=strenv(var)' ${output_dir}/config.json  -P -o json
 
 ocserver=$(oc whoami --show-server)
-sed "s;<api_server>;${ocserver};g" templates/persistence-flags_template.txt  > persistence-flags.txt
+sed "s;<api_server>;${ocserver};g" templates/persistence-flags_template.txt  > ${output_dir}/persistence-flags.txt
 sed "s;<namespace>;${namespace};g" templates/forward-db_template.sh  > ${output_dir}/forward-db.sh
 sed -i "s;<dspa>;${dspa};g" ${output_dir}/forward-db.sh
 sed "s;<namespace>;${namespace};g" templates/forward-minio_template.sh  > ${output_dir}/forward-minio.sh
@@ -57,7 +66,7 @@ sed -i "s;<dspa>;${dspa};g" ${output_dir}/forward-minio.sh
 sed -i "s;<S3_ENDOINT>;${minio_host_scheme}://${minio_host};g" ${output_dir}/artifact_script.sh
 sed -i "s;<S3_BUCKET>;${minio_bucket};g" ${output_dir}/artifact_script.sh
 
-sed -i "s;<kube_config>;${3};g" ${output_dir}/persistence-flags.txt
+sed -i "s;<kube_config>;${kube_config_path};g" ${output_dir}/persistence-flags.txt
 
 echo
 GR='\033[0;32m'
