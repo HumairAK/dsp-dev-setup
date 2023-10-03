@@ -65,14 +65,15 @@ sed "s;<namespace>;${namespace};g" templates/forward-db_template.sh  > ${output_
 sed -i "s;<dspa>;${dspa};g" ${output_dir}/forward-db.sh
 sed "s;<namespace>;${namespace};g" templates/forward-minio_template.sh  > ${output_dir}/forward-minio.sh
 sed -i "s;<dspa>;${dspa};g" ${output_dir}/forward-minio.sh
-
-chmod +x ${output_dir}/forward-*.sh
-
-
 sed -i "s;<S3_ENDOINT>;${minio_host_scheme}://${minio_host};g" ${output_dir}/artifact_script.sh
 sed -i "s;<S3_BUCKET>;${minio_bucket};g" ${output_dir}/artifact_script.sh
-
 sed -i "s;<kube_config>;${kube_config_path};g" ${output_dir}/persistence-flags.txt
+
+cp ${vars_file} ${output_dir}/vars.env
+
+cat ${vars_file} | yq 'to_entries | map(.key + "=" + .value) | .[]' > ${output_dir}/vars.env
+
+chmod +x ${output_dir}/forward-*.sh
 
 echo
 GR='\033[0;32m'

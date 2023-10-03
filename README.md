@@ -10,20 +10,23 @@
 Clone relevant Git repos
 ```bash
 WORKING_DIR=${REPLACE_THIS}
-git clone git@github.com:HumairAK/dsp-dev-setup.git ${WORKING_DIR}/dsp-dev-setup
-git clone git@github.com:opendatahub-io/data-science-pipelines.git ${WORKING_DIR}/data-science-pipelines
-git clone git@github.com:opendatahub-io/data-science-pipelines-operator.git ${WORKING_DIR}/data-science-pipelines-operator
+DSPO_REPO=${DSPO_REPO}
+DSP_REPO=${DSP_REPO}
+DEV_SETUP_REPO=${DEV_SETUP_REPO}
+git clone git@github.com:HumairAK/dsp-dev-setup.git ${DEV_SETUP_REPO}
+git clone git@github.com:opendatahub-io/data-science-pipelines.git ${DSP_REPO}
+git clone git@github.com:opendatahub-io/data-science-pipelines-operator.git ${DSPO_REPO}
 ```
 
 Deploy a DSPO
 ```bash
-cd ${WORKING_DIR}/data-science-pipelines-operator
+cd ${DSPO_REPO}
 make deploy
 ```
 
 Deploy DSPA
 ```bash
-cd ${WORKING_DIR}/data-science-pipelines
+cd ${DSP_REPO}
 oc new-project dspa
 oc -n dspa apply -f config/samples/dspa_simple.yaml
 ```
@@ -41,7 +44,7 @@ oc scale --replicas=0 deployment/ds-pipeline-sample
 ```
 
 ```bash
-cd ${WORKING_DIR}/dsp-dev-setup
+cd ${DEV_SETUP_REPO}
 mkdir output
 ./main.sh dspa sample /home/hukhan/.kube/config output
 ```
@@ -65,16 +68,20 @@ Open 2 separate 2 terminals, and in each run the following:
 
 ```bash
 # Terminal 1
-cd ${WORKING_DIR}/dsp-dev-setup
+cd ${DEV_SETUP_REPO}
 ./output/forward-minio.sh
 
 # Terminal 2
-cd ${WORKING_DIR}/dsp-dev-setup
+cd ${DEV_SETUP_REPO}
 ./output/forward-db.sh
 ```
 
 Now run API Server
+```bash
+cd ${DSP_REPO}
+go run --config=${DEV_SETUP_REPO}/output --sampleconfig=${DEV_SETUP_REPO}/output/sample_config.json -logtostderr=true
 
+```
 
 
 [DSP]: https://github.com/opendatahub-io/data-science-pipelines
