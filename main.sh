@@ -2,26 +2,19 @@
 
 set -e
 
-# usage:
-#
-
-
 if [ $# -eq 0 ]; then
     >&2 echo "No arguments provided"
     echo "Usage: ./main.sh namespace dspa_name kube_config_path"
     exit 1
 fi
 
-
 namespace=$1
 dspa=$2
 vars_file=vars.yaml
 output_dir=$4
 
-
 oc apply -f manifests/minio-route.yaml
 echo "Deployed minio route"
-
 
 cp templates/vars-templates.yaml ./vars.yaml
 cp templates/config-template.json ${output_dir}/config.json
