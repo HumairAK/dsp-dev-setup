@@ -9,9 +9,8 @@
 
 Clone relevant Git repos
 ```bash
-WORKING_DIR=${REPLACE_THIS}
-DSPO_REPO=${DSPO_REPO}
-DSP_REPO=${DSP_REPO}
+DSPO_REPO=data-science-pipelines
+DSP_REPO=data-science-pipelines-operator
 DEV_SETUP_REPO=${DEV_SETUP_REPO}
 git clone git@github.com:HumairAK/dsp-dev-setup.git ${DEV_SETUP_REPO}
 git clone git@github.com:opendatahub-io/data-science-pipelines.git ${DSP_REPO}
