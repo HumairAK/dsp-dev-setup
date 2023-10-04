@@ -79,10 +79,17 @@ cd ${DEV_SETUP_REPO}
 Now run API Server
 ```bash
 cd ${DSP_REPO}
-source ${DEV_SETUP_REPO}/output/vars.env
+
+export ARTIFACT_SCRIPT=$(cat ${DEV_SETUP_REPO}/output/artifact_script.sh)
+export $(cat ${DEV_SETUP_REPO}/output/vars.env | xargs)
+
 go build -o /bin/apiserver backend/src/apiserver/*.go
 ./bin/apiserver --config=${DEV_SETUP_REPO}/output --sampleconfig=${DEV_SETUP_REPO}/output/sample_config.json -logtostderr=true
 ```
+
+The `ARTIFACT_SCRIPT` is a bit tricky, as it has to store the entire artifact script, but because it's concatenated into one line, it may not work due to whitespacing issues. 
+This means pipelines passing artifacts into s3 may not work properly, we'd need to figure out how to properly export the script as an env var (like we do in the server pods).
+
 
 [DSP]: https://github.com/opendatahub-io/data-science-pipelines
 [DSPO]: https://github.com/opendatahub-io/data-science-pipelines-operator
