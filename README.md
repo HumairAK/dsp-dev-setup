@@ -2,7 +2,7 @@
 
 ## Prerequisites
 * Have a Dev OCP 4.11+ cluster with cluster admin
-* Install OpenShift Pipelines 1.9 on this cluster from OLM
+* Install OpenShift Pipelines 1.9+ on this cluster from OLM
 * Be logged in to cluster as cluster admin via OC
 
 ### Setup
