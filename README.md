@@ -17,6 +17,12 @@ git clone git@github.com:opendatahub-io/data-science-pipelines.git ${DSP_REPO}
 git clone git@github.com:opendatahub-io/data-science-pipelines-operator.git ${DSPO_REPO}
 ```
 
+Configure `go env`
+```bash
+go env -w GO111MODULE=on
+go env -w GOPROXY="https://proxy.golang.org,direct"
+```
+
 Deploy a DSPO
 ```bash
 cd ${DSPO_REPO}
