@@ -26,16 +26,18 @@ go env -w GOPROXY="https://proxy.golang.org,direct"
 
 Deploy a DSPO
 ```bash
-cd ${DSPO_REPO}
+pushd ${DSPO_REPO}
 oc new-project odh-applications
 make deploy
+popd
 ```
 
 Deploy DSPA
 ```bash
-cd ${DSP_REPO}
+pushd ${DSP_REPO}
 oc new-project dspa
 oc -n dspa apply -f config/samples/dspa_simple.yaml
+popd
 ```
 
 ### Locally run each component
