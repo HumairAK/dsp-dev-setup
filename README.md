@@ -27,6 +27,7 @@ go env -w GOPROXY="https://proxy.golang.org,direct"
 Deploy a DSPO
 ```bash
 cd ${DSPO_REPO}
+oc new-project odh-applications
 make deploy
 ```
 
