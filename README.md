@@ -34,7 +34,7 @@ popd
 
 Deploy DSPA
 ```bash
-pushd ${DSP_REPO}
+pushd ${DSPO_REPO}
 oc new-project dspa
 oc -n dspa apply -f config/samples/dspa_simple.yaml
 popd
