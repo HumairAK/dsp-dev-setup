@@ -94,6 +94,7 @@ cd ${DEV_SETUP_REPO}
 export ARTIFACT_SCRIPT=$(cat output/artifact_script.sh)
 export $(cat output/vars.env | xargs)
 
+cd ${DSP_REPO}
 go build -o /bin/apiserver backend/src/apiserver/*.go
 ./bin/apiserver --config=${DEV_SETUP_REPO}/output --sampleconfig=${DEV_SETUP_REPO}/output/sample_config.json -logtostderr=true
 ```
