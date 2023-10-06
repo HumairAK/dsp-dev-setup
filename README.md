@@ -96,7 +96,7 @@ export $(cat output/vars.env | xargs)
 
 cd ${DSP_REPO}
 go build -o bin/apiserver backend/src/apiserver/*.go
-./bin/apiserver --config=${DEV_SETUP_REPO}/output --sampleconfig=${DEV_SETUP_REPO}/output/sample_config.json -logtostderr=true
+./bin/apiserver --config=../${DEV_SETUP_REPO}/output --sampleconfig=../${DEV_SETUP_REPO}/output/sample_config.json -logtostderr=true
 ```
 
 The `ARTIFACT_SCRIPT` is a bit tricky, as it has to store the entire artifact script, but because it's concatenated into one line, it may not work due to whitespacing issues. 
