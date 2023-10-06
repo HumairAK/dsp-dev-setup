@@ -89,7 +89,7 @@ cd ${DEV_SETUP_REPO}
 
 Now run API Server
 ```bash
-cd ${DSP_REPO}
+cd ${DEV_SETUP_REPO}
 
 export ARTIFACT_SCRIPT=$(cat ${DEV_SETUP_REPO}/output/artifact_script.sh)
 export $(cat ${DEV_SETUP_REPO}/output/vars.env | xargs)
