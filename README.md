@@ -5,6 +5,8 @@
 * Install OpenShift Pipelines 1.9+ on this cluster from OLM
 * Be logged in to cluster as cluster admin via OC
 * kubectl -> [sudo yum install -y kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/#install-using-native-package-management)
+* yq -> `wget https://github.com/mikefarah/yq/releases/download/${VERSION}/${BINARY}.tar.gz -O - |\
+  tar xz && mv ${BINARY} /usr/bin/yq`
 
 ### Setup
 
