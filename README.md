@@ -91,8 +91,8 @@ Now run API Server
 ```bash
 cd ${DEV_SETUP_REPO}
 
-export ARTIFACT_SCRIPT=$(cat ${DEV_SETUP_REPO}/output/artifact_script.sh)
-export $(cat ${DEV_SETUP_REPO}/output/vars.env | xargs)
+export ARTIFACT_SCRIPT=$(cat output/artifact_script.sh)
+export $(cat output/vars.env | xargs)
 
 go build -o /bin/apiserver backend/src/apiserver/*.go
 ./bin/apiserver --config=${DEV_SETUP_REPO}/output --sampleconfig=${DEV_SETUP_REPO}/output/sample_config.json -logtostderr=true
