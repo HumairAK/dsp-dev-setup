@@ -5,7 +5,7 @@ set -e
 if [ $# != 4 ]; then
     >&2 echo "4 arguments required"
     echo "Usage: ./main.sh namespace dspa_name kube_config_path output_dir"
-    # mkdir output && ./main.sh dspa sample /home/hukhan/.kube/config output
+    # mkdir output && ./main.sh ${ns} sample /home/hukhan/.kube/config output
     exit 1
 fi
 
@@ -59,12 +59,6 @@ dbpsw=$(oc -n ${namespace} get secret ds-pipeline-db-$2  -o jsonpath='{.data.pas
 var=${dbpsw} yq -i '.DBCONFIG_PASSWORD=env(var)' ${vars_file}
 var=${dbpsw} yq -i '.DBCONFIG_MYSQLCONFIG_PASSWORD=strenv(var)' ${vars_file}
 
-# Configure MLMD/APIServer host vars
-METADATA_GRPC_SERVICE_SERVICE_HOST=ds-pipeline-metadata-grpc-${dspa}.${namespace}.svc.cluster.local
-ML_PIPELINE_SERVICE_HOST=ds-pipeline-${dspa}.${namespace}.svc.cluster.local
-var=${METADATA_GRPC_SERVICE_SERVICE_HOST} yq -i '.METADATA_GRPC_SERVICE_SERVICE_HOST=strenv(var)' ${vars_file}
-var=${ML_PIPELINE_SERVICE_HOST} yq -i '.ML_PIPELINE_SERVICE_HOST=strenv(var)' ${vars_file}
-
 # Set system info
 var=${namespace} yq -i '.POD_NAMESPACE=env(var)' ${vars_file}
 var=${ocserver} yq -i '.KUBERNETES_SERVICE_HOST=env(var)' ${vars_file}
@@ -82,7 +76,12 @@ sed -i "s;<kube_config>;${kube_config_path};g" ${output_dir}/persistence-flags.t
 ## Configure DB forwarding
 sed "s;<namespace>;${namespace};g" templates/forward-db_template.sh  > ${output_dir}/forward-db.sh
 sed -i "s;<dspa>;${dspa};g" ${output_dir}/forward-db.sh
-chmod +x ${output_dir}/forward-*.sh
+chmod +x ${output_dir}/forward-db.sh
+
+## Configure mlmd grpc forwarding
+sed "s;<namespace>;${namespace};g" templates/forward-mlmd-grpc-template.sh  > ${output_dir}/forward-mlmd-grpc.sh
+sed -i "s;<dspa>;${dspa};g" ${output_dir}/forward-mlmd-grpc.sh
+chmod +x ${output_dir}/forward-db.sh
 
 # Create a script .sh/.env version of the env vars from the .yaml file
 cp ${vars_file} ${output_dir}/vars.env
