@@ -120,6 +120,20 @@ go build -o bin/pa backend/src/agent/persistence/*.go
     --namespace=${DSPA_NS}
 ```
 
+# Current issues / workarounds
+
+
+### kfp-driver
+Currently the kfp-driver creates a cache client that has ml-pipeline service hardcoded, which means it requires an 
+end point to the k8s api server service named `ml-pipeline`. Work around is to tunnel the local api server using an app
+like ngrok, and sub that endpoint into the cache client's `cacheDefaultEndpoint()` in `cache.go`. Then rebuild kfp-driver
+and sub this image in the api server's env var `V2_DRIVER_IMAGE=your/image`.
+
+### persistence agent
+Persistent agent seems to keep encountering `transient error` due to `PROTOCOL_ERROR` when trying to report workflows to
+the api server grpc endpoint. No clue what the issue is here.
+
+
 # Troubleshooting
 
 ### Go Env issues
