@@ -98,11 +98,18 @@ go build -o bin/apiserver backend/src/apiserver/*.go
 
 To run PA run the following: 
 
-```
-oc -n ${DSPA_NS} scale --replicas=0 deployment/ds-pipeline-sample
+Scale down: 
+```bash
 oc -n ${DSPA_NS} scale --replicas=0 deployment/ds-pipeline-persistenceagent-sample
-export $(cat output/vars.env | xargs)
+```
 
+Export env vars:
+```bash
+export $(cat output/vars.env | xargs)
+```
+
+Build and run:
+```
 go build -o bin/pa backend/src/agent/persistence/*.go
 
 ./bin/pa --kubeconfig=/home/hukhan/.kube/config \
@@ -112,7 +119,6 @@ go build -o bin/pa backend/src/agent/persistence/*.go
     --mlPipelineServiceGRPCPort=8887 \
     --namespace=${DSPA_NS}
 ```
-
 
 # Troubleshooting
 
