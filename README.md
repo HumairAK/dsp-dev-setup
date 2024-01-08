@@ -2,43 +2,45 @@
 
 ## Prerequisites
 * Have a Dev OCP 4.11+ cluster with cluster admin
-* Install OpenShift Pipelines 1.9+ on this cluster from OLM
 * Be logged in to cluster as cluster admin via OC
-* kubectl -> [sudo yum install -y kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/#install-using-native-package-management)
-* yq -> `wget https://github.com/mikefarah/yq/releases/download/${VERSION}/${BINARY}.tar.gz -O - |\
-  tar xz && mv ${BINARY} /usr/bin/yq`
+* [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/#install-using-native-package-management)  
+```bash
+sudo yum install -y kubectl
+```
+* yq
+```bash
+wget https://github.com/mikefarah/yq/releases/download/${VERSION}/${BINARY}.tar.gz -O - |\
+  tar xz && mv ${BINARY} /usr/bin/yq
+```
+
 
 ### Setup
 
-Clone relevant Git repos
+Setup env
 ```bash
 DEV_SETUP_REPO=dsp-dev-setup
 DSP_REPO=data-science-pipelines
 DSPO_REPO=data-science-pipelines-operator
+DSPA_NS=dspa
+OPERATOR_NS=odh-applications
 git clone git@github.com:HumairAK/dsp-dev-setup.git ${DEV_SETUP_REPO}
 git clone git@github.com:opendatahub-io/data-science-pipelines.git ${DSP_REPO}
 git clone git@github.com:opendatahub-io/data-science-pipelines-operator.git ${DSPO_REPO}
 ```
 
-Configure `go env`
-```bash
-go env -w GO111MODULE=on
-go env -w GOPROXY="https://proxy.golang.org,direct"
-```
-
 Deploy a DSPO
 ```bash
 pushd ${DSPO_REPO}
-oc new-project odh-applications
-make deploy
+oc new-project ${OPERATOR_NS}
+make deploy OPERATOR_NS=${OPERATOR_NS}
 popd
 ```
 
 Deploy DSPA
 ```bash
 pushd ${DSPO_REPO}
-oc new-project dspa
-oc -n dspa apply -f config/samples/dspa_simple.yaml
+oc new-project ${DSPA_NS}
+oc -n ${DSPA_NS} apply -f config/samples/dspa_simple.yaml
 popd
 ```
 
@@ -51,7 +53,7 @@ install from _Setup_ instructions above.
 
 Scale down api server: 
 ```
-oc scale --replicas=0 deployment/ds-pipeline-sample
+oc -n ${DSPA_NS} scale --replicas=0 deployment/ds-pipeline-sample
 ```
 
 ```bash
@@ -101,6 +103,16 @@ go build -o bin/apiserver backend/src/apiserver/*.go
 
 The `ARTIFACT_SCRIPT` is a bit tricky, as it has to store the entire artifact script, but because it's concatenated into one line, it may not work due to whitespacing issues. 
 This means pipelines passing artifacts into s3 may not work properly, we'd need to figure out how to properly export the script as an env var (like we do in the server pods).
+
+
+# Troubleshooting
+
+### Go Env issues
+Configure `go env`
+```bash
+go env -w GO111MODULE=on
+go env -w GOPROXY="https://proxy.golang.org,direct"
+```
 
 
 [DSP]: https://github.com/opendatahub-io/data-science-pipelines
