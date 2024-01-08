@@ -96,9 +96,15 @@ pod=$(oc -n ${namespace} get pod  -l app=ds-pipeline-scheduledworkflow-$2 --no-h
 oc exec -n $1 $pod -- cat /var/run/secrets/kubernetes.io/serviceaccount/ca.crt > ${output_dir}/ca.crt
 oc whoami --show-token > ${output_dir}/token
 echo -e "Done, ensure this ca.crt file is added to /var/run/secrets/kubernetes.io/serviceaccount/ca.crt on the local filesystem to dupe apiserver."
+echo
 echo sudo mkdir -p /var/run/secrets/kubernetes.io/serviceaccount
 echo sudo cp ${output_dir}/ca.crt /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
 echo sudo cp ${output_dir}/token /var/run/secrets/kubernetes.io/serviceaccount/token
+echo
+echo -e  Similarly for persistence agent sa token run the following:
+echo
+echo sudo mkdir -p /var/run/secrets/${namespace}/tokens
+echo sudo cp ${output_dir}/token /var/run/secrets/${namespace}/tokens/persistenceagent-sa-token
 echo -e ${NC}
 
 echo "Run port-forward-db via configuration Run"

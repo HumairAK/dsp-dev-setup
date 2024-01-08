@@ -72,28 +72,21 @@ Copy the creds to the following locations on your file system:
 sudo mkdir -p /var/run/secrets/kubernetes.io/serviceaccount
 sudo cp output/ca.crt /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
 sudo cp output/token /var/run/secrets/kubernetes.io/serviceaccount/token
+
+sudo mkdir -p /var/run/secrets/kubeflow/tokens
+sudo cp output/token /var/run/secrets/kubeflow/tokens/persistenceagent-sa-token
 ```
 This simulates an in cluster config similar to what API Server sees, when running inside a Pod.
 
-API Server needs to hook into a db/s3, we can port forward minio/mariadb for this.
-
-Open 2 separate 2 terminals, and in each run the following:
-
+API Server needs to hook into the db and mlmd, we can port forward both services to allow this:
 ```bash
-# Terminal 1
-cd ${DEV_SETUP_REPO}
-./output/forward-minio.sh
-
-# Terminal 2
 cd ${DEV_SETUP_REPO}
 ./output/forward-db.sh
+./output/forward-mlmd-grpc.sh
 ```
 
 Now run API Server
 ```bash
-cd ${DEV_SETUP_REPO}
-
-export ARTIFACT_SCRIPT=$(cat output/artifact_script.sh)
 export $(cat output/vars.env | xargs)
 
 cd ${DSP_REPO}
@@ -101,8 +94,24 @@ go build -o bin/apiserver backend/src/apiserver/*.go
 ./bin/apiserver --config=../${DEV_SETUP_REPO}/output --sampleconfig=../${DEV_SETUP_REPO}/output/sample_config.json -logtostderr=true
 ```
 
-The `ARTIFACT_SCRIPT` is a bit tricky, as it has to store the entire artifact script, but because it's concatenated into one line, it may not work due to whitespacing issues. 
-This means pipelines passing artifacts into s3 may not work properly, we'd need to figure out how to properly export the script as an env var (like we do in the server pods).
+#### Persistence Agent
+
+To run PA run the following: 
+
+```
+oc -n ${DSPA_NS} scale --replicas=0 deployment/ds-pipeline-sample
+oc -n ${DSPA_NS} scale --replicas=0 deployment/ds-pipeline-persistenceagent-sample
+export $(cat output/vars.env | xargs)
+
+go build -o bin/pa backend/src/agent/persistence/*.go
+
+./bin/pa --kubeconfig=/home/hukhan/.kube/config \
+    --master=https://api.hukhan-3.dev.datahub.redhat.com:6443 \
+    --mlPipelineAPIServerName=localhost \
+    --mlPipelineServiceHttpPort=8888 \
+    --mlPipelineServiceGRPCPort=8887 \
+    --namespace=${DSPA_NS}
+```
 
 
 # Troubleshooting
