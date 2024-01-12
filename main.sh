@@ -81,11 +81,18 @@ chmod +x ${output_dir}/forward-db.sh
 ## Configure mlmd grpc forwarding
 sed "s;<namespace>;${namespace};g" templates/forward-mlmd-grpc-template.sh  > ${output_dir}/forward-mlmd-grpc.sh
 sed -i "s;<dspa>;${dspa};g" ${output_dir}/forward-mlmd-grpc.sh
-chmod +x ${output_dir}/forward-db.sh
+chmod +x ${output_dir}/forward-mlmd-grpc.sh
+
+## Configure ml-pipeline grpc forwarding
+sed "s;<namespace>;${namespace};g" templates/forward-ml-pipeline-template.sh  > ${output_dir}/forward-ml-pipeline.sh
+sed -i "s;<dspa>;${dspa};g" ${output_dir}/forward-ml-pipeline.sh
+chmod +x ${output_dir}/forward-ml-pipeline.sh
 
 # Create a script .sh/.env version of the env vars from the .yaml file
 cp ${vars_file} ${output_dir}/vars.env
 cat ${vars_file} | yq 'to_entries | map(.key + "=" + .value) | .[]' > ${output_dir}/vars.env
+
+echo -n $namespace  > ${output_dir}/namespace
 
 # Output instructions on how to configure token and crt
 echo
@@ -95,16 +102,9 @@ echo -e "${GR}Fetching a ca.crt file from scheduledworkflow pod path  /var/run/s
 pod=$(oc -n ${namespace} get pod  -l app=ds-pipeline-scheduledworkflow-$2 --no-headers=true | awk '{print $1}')
 oc exec -n $1 $pod -- cat /var/run/secrets/kubernetes.io/serviceaccount/ca.crt > ${output_dir}/ca.crt
 oc whoami --show-token > ${output_dir}/token
-echo -e "Done, ensure this ca.crt file is added to /var/run/secrets/kubernetes.io/serviceaccount/ca.crt on the local filesystem to dupe apiserver."
-echo
-echo sudo mkdir -p /var/run/secrets/kubernetes.io/serviceaccount
-echo sudo cp ${output_dir}/ca.crt /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
-echo sudo cp ${output_dir}/token /var/run/secrets/kubernetes.io/serviceaccount/token
-echo
-echo -e  Similarly for persistence agent sa token run the following:
-echo
-echo sudo mkdir -p /var/run/secrets/${namespace}/tokens
-echo sudo cp ${output_dir}/token /var/run/secrets/${namespace}/tokens/persistenceagent-sa-token
+echo -e "Done, run the following:"
+echo -e "./post-config-run.sh ${output_dir} ${namespace}"
+echo -e "to copy SA tokens and cets to /var/run/secrets/."
 echo -e ${NC}
 
 echo "Run port-forward-db via configuration Run"
