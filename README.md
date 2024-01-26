@@ -59,11 +59,11 @@ oc -n ${DSPA_NS} scale --replicas=0 deployment/ds-pipeline-sample
 ```bash
 cd ${DEV_SETUP_REPO}
 mkdir output
-./main.sh dspa sample /home/hukhan/.kube/config output
+./main.sh ${DSPA_NS} sample /home/${USER}/.kube/config output
 ```
 This will generate all the files required to configure API Server deployment.
 
-API Server creats a k8sclient connection using in cluster config, so to emulate this, the above script pulls cluster 
+API Server creates a k8sclient connection using in cluster config, so to emulate this, the above script pulls cluster 
 certs, and your OC user token in the `output` folder. Please don't paste the contents of this folder anywhere public for
 your own security.
 
