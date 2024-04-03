@@ -1,6 +1,13 @@
 #!/usr/bin/env bash
 
-set -e
+set -eE -o functrace
+
+failure() {
+  local lineno=$1
+  local msg=$2
+  echo "Failed at $lineno: $msg"
+}
+trap 'failure ${LINENO} "$BASH_COMMAND"' ERR
 
 if [ $# != 4 ]; then
     >&2 echo "4 arguments required"
@@ -42,8 +49,8 @@ minio_host_secure="false"
 minio_host_scheme="http"
 minio_bucket=mlpipeline
 minio_host=$(oc -n ${namespace} get route minio -o yaml | yq .spec.host)
-accesskey=$(oc -n ${namespace} get secret mlpipeline-minio-artifact  -o jsonpath='{.data.accesskey}' | base64 -d )
-secretkey=$(oc -n ${namespace} get secret mlpipeline-minio-artifact  -o jsonpath='{.data.secretkey}' | base64 -d )
+accesskey=$(oc -n ${namespace} get secret ds-pipeline-s3-${dspa}  -o jsonpath='{.data.accesskey}' | base64 -d )
+secretkey=$(oc -n ${namespace} get secret ds-pipeline-s3-${dspa}  -o jsonpath='{.data.secretkey}' | base64 -d )
 
 var=${minio_host_secure} yq -i '.secure=strenv(var)' ${vars_file}
 var=${minio_host_scheme} yq -i '.ARTIFACT_ENDPOINT_SCHEME=env(var)' ${vars_file}
