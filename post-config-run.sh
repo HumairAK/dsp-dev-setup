@@ -17,3 +17,6 @@ sudo cp $output_dir/token /var/run/secrets/kubernetes.io/serviceaccount/token
 sudo mkdir -p /var/run/secrets/$2/tokens
 sudo cp $output_dir/token /var/run/secrets/$2/tokens/persistenceagent-sa-token
 sudo cp $output_dir/namespace /var/run/secrets/kubernetes.io/serviceaccount/namespace
+
+sudo mkdir -p /var/run/secrets/kubeflow/tokens
+sudo cp $output_dir/token /var/run/secrets/kubeflow/tokens/persistenceagent-sa-token

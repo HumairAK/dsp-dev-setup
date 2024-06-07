@@ -95,6 +95,12 @@ sed "s;<namespace>;${namespace};g" templates/forward-ml-pipeline-template.sh  > 
 sed -i "s;<dspa>;${dspa};g" ${output_dir}/forward-ml-pipeline.sh
 chmod +x ${output_dir}/forward-ml-pipeline.sh
 
+## Configure mlmd grpc forwarding
+sed "s;<namespace>;${namespace};g" templates/start-proxy-and-server-template.sh  > ${output_dir}/start-proxy-and-server.sh
+sed -i "s;<dspa>;${dspa};g" ${output_dir}/start-proxy-and-server.sh
+chmod +x ${output_dir}/start-proxy-and-server.sh
+
+
 # Create a script .sh/.env version of the env vars from the .yaml file
 cp ${vars_file} ${output_dir}/vars.env
 cat ${vars_file} | yq 'to_entries | map(.key + "=" + .value) | .[]' > ${output_dir}/vars.env
@@ -109,6 +115,7 @@ echo -e "${GR}Fetching a ca.crt file from scheduledworkflow pod path  /var/run/s
 pod=$(oc -n ${namespace} get pod  -l app=ds-pipeline-scheduledworkflow-$2 --no-headers=true | awk '{print $1}')
 oc exec -n $1 $pod -- cat /var/run/secrets/kubernetes.io/serviceaccount/ca.crt > ${output_dir}/ca.crt
 oc whoami --show-token > ${output_dir}/token
+oc whoami --show-token | tr -d '\n' > ${output_dir}/token
 echo -e "Done, run the following:"
 echo -e "./post-config-run.sh ${output_dir} ${namespace}"
 echo -e "to copy SA tokens and cets to /var/run/secrets/."
