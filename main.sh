@@ -9,9 +9,9 @@ failure() {
 }
 trap 'failure ${LINENO} "$BASH_COMMAND"' ERR
 
-if [ $# != 4 ]; then
-    >&2 echo "4 arguments required"
-    echo "Usage: ./main.sh namespace dspa_name kube_config_path output_dir"
+if [ $# -lt 4 ]; then
+    >&2 echo "Minimum 4 arguments required"
+    echo "Usage: ./main.sh namespace dspa_name kube_config_path output_dir [external_s3_secret]"
     # mkdir output && ./main.sh ${ns} sample /home/hukhan/.kube/config output
     exit 1
 fi
@@ -21,6 +21,7 @@ namespace=$1
 dspa=$2
 kube_config_path=$3
 output_dir=$4
+external_s3_secret=$5
 
 if [ ! -d "${output_dir}" ];
 then
@@ -47,18 +48,41 @@ port=$(oc whoami --show-server | tr '//' ' ' | tr ':' ' ' | awk '{print $3}')
 # Set minio creds
 minio_host_secure="false"
 minio_host_scheme="http"
-minio_bucket=mlpipeline
+bucket=mlpipeline
+minio_port=80
 minio_host=$(oc -n ${namespace} get route minio -o yaml | yq .spec.host)
-accesskey=$(oc -n ${namespace} get secret ds-pipeline-s3-${dspa}  -o jsonpath='{.data.accesskey}' | base64 -d )
-secretkey=$(oc -n ${namespace} get secret ds-pipeline-s3-${dspa}  -o jsonpath='{.data.secretkey}' | base64 -d )
+
+objStoreSecretName=ds-pipeline-s3-${dspa}
+bucket=mlpipeline
+if [ ! -z "${external_s3_secret}" ];
+then
+  objStoreSecretName=${external_s3_secret}
+  dspaAccessKey=$(oc -n ${namespace} get dspa ${dspa}  -o jsonpath='{.spec.objectStorage.externalStorage.s3CredentialsSecret.accessKey}')
+  dspaSecretKey=$(oc -n ${namespace} get dspa ${dspa}  -o jsonpath='{.spec.objectStorage.externalStorage.s3CredentialsSecret.secretKey}')
+  accesskey=$(oc -n ${namespace} get secret ${objStoreSecretName}  -o jsonpath="{.data.${dspaAccessKey}}" | base64 -d )
+  secretkey=$(oc -n ${namespace} get secret ${objStoreSecretName}  -o jsonpath="{.data.${dspaSecretKey}}" | base64 -d )
+  minio_host_secure="true"
+  minio_host_scheme=$(oc -n ${namespace} get dspa ${dspa}  -o jsonpath='{.spec.objectStorage.externalStorage.scheme}')
+  bucket=$(oc -n ${namespace} get dspa ${dspa}  -o jsonpath='{.spec.objectStorage.externalStorage.bucket}')
+  minio_host=$(oc -n ${namespace} get dspa ${dspa}  -o jsonpath='{.spec.objectStorage.externalStorage.host}')
+  minio_port=""
+else
+  accesskey=$(oc -n ${namespace} get secret ${objStoreSecretName}  -o jsonpath='{.data.accesskey}' | base64 -d )
+  secretkey=$(oc -n ${namespace} get secret ${objStoreSecretName}  -o jsonpath='{.data.secretkey}' | base64 -d )
+  var=${minio_port} yq -i '.MINIO_SERVICE_SERVICE_PORT=strenv(var)' ${vars_file}
+fi
 
 var=${minio_host_secure} yq -i '.secure=strenv(var)' ${vars_file}
 var=${minio_host_scheme} yq -i '.ARTIFACT_ENDPOINT_SCHEME=env(var)' ${vars_file}
 var=${minio_host} yq -i '.ARTIFACT_ENDPOINT=env(var)' ${vars_file}
 var=${minio_host} yq -i '.MINIO_SERVICE_SERVICE_HOST=env(var)' ${vars_file}
+var=${objStoreSecretName} yq -i '.OBJECTSTORECONFIG_CREDENTIALSSECRET=env(var)' ${vars_file}
 var=${accesskey} yq -i '.OBJECTSTORECONFIG_ACCESSKEY=env(var)' ${vars_file}
-var=${accesskey} yq -i '.accesskey=env(var)' ${vars_file}
 var=${secretkey} yq -i '.OBJECTSTORECONFIG_SECRETACCESSKEY=env(var)' ${vars_file}
+var=${bucket} yq -i '.OBJECTSTORECONFIG_BUCKETNAME=env(var)' ${vars_file}
+var=${bucket} yq -i '.ARTIFACT_BUCKET=env(var)' ${vars_file}
+
+var=${accesskey} yq -i '.accesskey=env(var)' ${vars_file}
 var=${secretkey} yq -i '.secretkey=env(var)' ${vars_file}
 
 # Set DB creds
