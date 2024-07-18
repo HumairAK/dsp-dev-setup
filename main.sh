@@ -119,6 +119,11 @@ sed "s;<namespace>;${namespace};g" templates/forward-ml-pipeline-template.sh  > 
 sed -i "s;<dspa>;${dspa};g" ${output_dir}/forward-ml-pipeline.sh
 chmod +x ${output_dir}/forward-ml-pipeline.sh
 
+## Configure ml-pipeline http forwarding
+sed "s;<namespace>;${namespace};g" templates/forward-ml-pipeline-http-template.sh  > ${output_dir}/forward-ml-pipeline-http.sh
+sed -i "s;<dspa>;${dspa};g" ${output_dir}/forward-ml-pipeline-http.sh
+chmod +x ${output_dir}/forward-ml-pipeline-http.sh
+
 ## Configure mlmd grpc forwarding
 sed "s;<namespace>;${namespace};g" templates/start-proxy-and-server-template.sh  > ${output_dir}/start-proxy-and-server.sh
 sed -i "s;<dspa>;${dspa};g" ${output_dir}/start-proxy-and-server.sh
